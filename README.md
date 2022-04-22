@@ -2,7 +2,7 @@ See the [requirements in requirements.md](requirements.md) or on Canvas.
 
 When you are ready, edit this file with the following info: 
 
-# A2: Photo Editor \[Your Name here!\]
+# A2: Photo Editor \[Jeremy Cao\]
 
 ## Overview
 
