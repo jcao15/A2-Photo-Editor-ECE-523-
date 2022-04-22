@@ -6,18 +6,20 @@ When you are ready, edit this file with the following info:
 
 ## Overview
 
-I built a thing that does something. But tell me what you built! 
+I built a simple photo editor! It can add text to the photo, draw stuff on the photo and rotate the photo with 90 degrees.
 
 ## Using the app 
 
-Tell me anything I need to know about running the app. 
+User is able to use either CameraX to take a photo or insert a photo from the gallery then have three simple functions to edit the photo. Once finish editing, user
+is able save the photo to the phone gallery.
 
 ## Walkthrough
 
-Include some screenshots and information. Put the screenshots in the [imgs](imgs) directory, and include them in this readme like this: 
+Screenshots:
 
 ![Sample Screenshot](imgs/11.png?raw=tru)
 ![Sample Screenshot](imgs/22.png?raw=tru)
+![Sample Screenshot](imgs/33.png?raw=tru)
 
 
 ## Reflection/Summary
