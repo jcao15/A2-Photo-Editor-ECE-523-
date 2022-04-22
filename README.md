@@ -16,7 +16,7 @@ Tell me anything I need to know about running the app.
 
 Include some screenshots and information. Put the screenshots in the [imgs](imgs) directory, and include them in this readme like this: 
 
-![Sample Screenshot](imgs/screenshot.png?raw=tru)
+![Sample Screenshot](imgs/11.png?raw=tru)
 
 Or use html to resize it: 
 
