@@ -5,14 +5,18 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.provider.Settings
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import coil.load
 import com.example.a2_photo_editor.databinding.ActivityMainBinding
 import com.karumi.dexter.Dexter
@@ -23,12 +27,17 @@ import com.karumi.dexter.listener.PermissionGrantedResponse
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.karumi.dexter.listener.single.PermissionListener
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
 
 
 private val CAMERA_REQUEST_CODE = 1
 private val GALLERY_REQUEST_CODE = 2
 private lateinit var img: ImageView
 private lateinit var editText: TextView
+private lateinit var bitmap: Bitmap
+private var count: Int = 0
 
 class photo_editor : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,6 +46,8 @@ class photo_editor : AppCompatActivity() {
 
         val btnCamera:Button = findViewById(R.id.btnCamera)
         val btnGallery:Button = findViewById(R.id.btnGallery)
+        val btnSave: Button = findViewById(R.id.saveImg)
+
         img = findViewById(R.id.imageView)
         editText= findViewById(R.id.editText)
 
@@ -49,6 +60,11 @@ class photo_editor : AppCompatActivity() {
         btnGallery.setOnClickListener {
             galleryCheckPermission()
         }
+
+        btnSave.setOnClickListener {
+            saveImgToStorage()
+        }
+
         //when you click on the image
         val editBt:Button = findViewById(R.id.editBt)
         editBt.setOnClickListener {
@@ -68,6 +84,7 @@ class photo_editor : AppCompatActivity() {
             pictureDialog.show()
         }
     }
+
     private fun galleryCheckPermission() {
 
         Dexter.withContext(this).withPermission(
@@ -141,10 +158,10 @@ class photo_editor : AppCompatActivity() {
 
                 CAMERA_REQUEST_CODE -> {
 
-                    val bitmap = data?.extras?.get("data") as Bitmap
+                    val insertBitmap = data?.extras?.get("data") as Bitmap
 
                     //we are using coroutine image loader (coil)
-                    img.load(bitmap) {
+                    img.load(insertBitmap) {
                         crossfade(true)
                         crossfade(1000)
                     }
@@ -201,4 +218,15 @@ class photo_editor : AppCompatActivity() {
     private fun rotate() {
         img.rotation += 90f
     }
+
+    private fun saveImgToStorage() {
+
+        bitmap = img.drawable.toBitmap()
+        count++
+        MediaStore.Images.Media.insertImage(contentResolver,bitmap,"Saved Image+{$count}","")
+        Toast.makeText(applicationContext,"saved image",Toast.LENGTH_SHORT).show()
+
+
+    }
+
 }
