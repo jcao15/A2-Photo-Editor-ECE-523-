@@ -27,10 +27,11 @@ import com.karumi.dexter.listener.single.PermissionListener
 import android.graphics.Bitmap
 
 import android.graphics.BitmapFactory
+import android.view.MotionEvent
 import java.io.IOException
 
 
-class photo_editor : AppCompatActivity() {
+class photo_editor : AppCompatActivity(),View.OnTouchListener {
 
     private val CAMERA_REQUEST_CODE = 1
     private val GALLERY_REQUEST_CODE = 2
@@ -38,7 +39,14 @@ class photo_editor : AppCompatActivity() {
     private lateinit var editText: TextView
     private lateinit var bitmap: Bitmap
     private lateinit var insertBitmap: Bitmap
+
     private var count: Int = 0
+    private var curX = 0
+    private var curY = 0
+    private var isBitmapInited = false
+    private lateinit var myBitmap: Bitmap
+    private lateinit var bitmapCanvas: Canvas
+    private lateinit var myPaint: Paint
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,10 +56,16 @@ class photo_editor : AppCompatActivity() {
         val btnGallery: Button = findViewById(R.id.btnGallery)
         val btnSave: Button = findViewById(R.id.saveImg)
 
+        myPaint = Paint()
+        myPaint.setARGB(255, 150, 200, 215)
+
         img = findViewById(R.id.imageView)
         editText = findViewById(R.id.editText)
 
         editText.visibility = View.INVISIBLE
+
+        //img.setOnTouchListener{ v, event -> return this.drawListener(v,event)}
+        img.setOnTouchListener(this)
 
         btnCamera.setOnClickListener {
             cameraCheckPermission()
@@ -88,6 +102,20 @@ class photo_editor : AppCompatActivity() {
 
     }
 
+    private fun initBitmap() {
+        if (img.drawable == null) {
+            isBitmapInited = false
+            return
+        }
+
+        if (img.width > 0 && img.height > 0) {
+            //myBitmap = Bitmap.createBitmap(img.width, img.height, Bitmap.Config.ARGB_8888)
+            myBitmap = img.drawable.toBitmap()
+            bitmapCanvas = Canvas(myBitmap)
+            isBitmapInited = true
+            img.setImageBitmap(myBitmap)
+        }
+    }
     private fun galleryCheckPermission() {
 
         Dexter.withContext(this).withPermission(
@@ -171,6 +199,7 @@ class photo_editor : AppCompatActivity() {
                         crossfade(true)
                         crossfade(1000)
                     }
+                    initBitmap()
                 }
 
                 GALLERY_REQUEST_CODE -> {
@@ -218,6 +247,36 @@ class photo_editor : AppCompatActivity() {
 
         editText.visibility = View.VISIBLE
 
+    }
+    override fun onTouch(v: View, event:MotionEvent):Boolean{
+
+        if (!isBitmapInited) {
+            initBitmap()
+        }
+        val action = event.action
+        when(action){
+            MotionEvent.ACTION_UP -> {
+                v.performClick()
+            }
+
+            MotionEvent.ACTION_DOWN -> {
+                curX= event.x.toInt()
+                curY= event.y.toInt()
+                bitmapCanvas.drawOval(RectF(curX.toFloat(), curY.toFloat(), curX + 50f, curY + 50f), myPaint)
+                //invalidate()
+            }
+            MotionEvent.ACTION_MOVE -> {
+                curX = event.x.toInt()
+                curY= event.y.toInt()
+                bitmapCanvas.drawOval(RectF(curX.toFloat(), curY.toFloat(), curX + 50f, curY + 50f), myPaint)
+                //invalidate()
+            }
+            else ->{
+            }
+
+        }
+        v.invalidate()
+        return true
     }
 
     private fun addText() {
