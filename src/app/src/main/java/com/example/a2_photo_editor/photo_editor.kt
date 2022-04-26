@@ -3,6 +3,7 @@ package com.example.a2_photo_editor
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.graphics.*
 import android.net.Uri
@@ -23,8 +24,10 @@ import com.karumi.dexter.listener.PermissionGrantedResponse
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.karumi.dexter.listener.single.PermissionListener
+import android.graphics.Bitmap
 
-
+import android.graphics.BitmapFactory
+import java.io.IOException
 
 
 class photo_editor : AppCompatActivity() {
@@ -34,6 +37,7 @@ class photo_editor : AppCompatActivity() {
     private lateinit var img: ImageView
     private lateinit var editText: TextView
     private lateinit var bitmap: Bitmap
+    private lateinit var insertBitmap: Bitmap
     private var count: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,20 +71,21 @@ class photo_editor : AppCompatActivity() {
             val pictureDialog = AlertDialog.Builder(this)
             pictureDialog.setTitle("Photo Editor")
             val pictureDialogItem = arrayOf(
-                "Enter text to overlay the photo",
-                "Draw on the image to annotate it", "Rotate photo"
+                "Draw on the image",
+                "add Text on the image to annotate it", "Rotate photo"
             )
             pictureDialog.setItems(pictureDialogItem) { dialog, which ->
 
                 when (which) {
-                    0 -> editText()
-                    1 -> draw()
+                    0 -> draw()
+                    1 -> addText()
                     2 -> rotate()
                 }
             }
 
             pictureDialog.show()
         }
+
     }
 
     private fun galleryCheckPermission() {
@@ -159,7 +164,7 @@ class photo_editor : AppCompatActivity() {
 
                 CAMERA_REQUEST_CODE -> {
 
-                    val insertBitmap = data?.extras?.get("data") as Bitmap
+                    insertBitmap = data?.extras?.get("data") as Bitmap
 
                     //we are using coroutine image loader (coil)
                     img.load(insertBitmap) {
@@ -209,43 +214,67 @@ class photo_editor : AppCompatActivity() {
 
 
     @SuppressLint("SetTextI18n")
-    private fun editText() {
+    private fun draw() {
 
         editText.visibility = View.VISIBLE
 
     }
 
-    private fun draw() {
+    private fun addText() {
 
         bitmap = img.drawable.toBitmap()
+
+        img.setImageBitmap(bitmap.drawText())
+        bitmap.recycle()
+
+    }
+    // extension function to get bitmap from assets
+    private fun Context.assetsToBitmap(fileName:String):Bitmap?{
+        return try {
+            val stream = assets.open(fileName)
+            BitmapFactory.decodeStream(stream)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    // extension function to draw text on bitmap
+    private fun Bitmap.drawText(
+        text:String = "UW HUSKY",
+        textSize:Float = 15f,
+        color:Int = Color.MAGENTA
+    ):Bitmap?{
+        val bitmap = copy(config,true)
         val canvas = Canvas(bitmap)
 
-        val paint = Paint()
-        paint.color = Color.WHITE // Text Color
+        Paint().apply {
+            flags = Paint.ANTI_ALIAS_FLAG
+            this.color = color
+            this.textSize = textSize
+            typeface = Typeface.SERIF
+            setShadowLayer(1f,0f,1f,Color.WHITE)
+            canvas.drawText(text,20f,height - 20f,this)
+        }
 
-        paint.textSize = 12F // Text Size
-
-        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)
-        canvas.drawBitmap(
-            bitmap,
-            0F,
-            0F,
-            paint
-
-        )
-        canvas.drawText("Testing...", 10F, 10F, paint)
+        return bitmap
     }
 
     private fun rotate() {
-        img.rotation += 90f
+        bitmap = img.drawable.toBitmap()
+        img.setImageBitmap(bitmap.rotate(90F))
+        bitmap.recycle()
+
+    }
+    private fun Bitmap.rotate(degrees: Float): Bitmap {
+        val matrix = Matrix().apply { postRotate(degrees) }
+        return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
     }
 
     private fun saveImgToStorage() {
-
         count++
-        MediaStore.Images.Media.insertImage(contentResolver, bitmap, "Saved Image+{$count}", "")
+        MediaStore.Images.Media.insertImage(contentResolver, img.drawable.toBitmap(), "Saved Image+{$count}", "")
         Toast.makeText(applicationContext, "saved image", Toast.LENGTH_SHORT).show()
-
 
     }
 
