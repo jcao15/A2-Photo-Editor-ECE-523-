@@ -31,6 +31,7 @@ import android.view.MotionEvent
 import java.io.IOException
 
 
+
 class photo_editor : AppCompatActivity(),View.OnTouchListener {
 
     private val CAMERA_REQUEST_CODE = 1
@@ -41,8 +42,10 @@ class photo_editor : AppCompatActivity(),View.OnTouchListener {
     private lateinit var insertBitmap: Bitmap
 
     private var count: Int = 0
-    private var curX = 0
-    private var curY = 0
+    private var downX = 0f
+    private var downY = 0f
+    private var upX = 0f
+    private var upY = 0f
     private var isBitmapInited = false
     private lateinit var myBitmap: Bitmap
     private lateinit var bitmapCanvas: Canvas
@@ -58,7 +61,7 @@ class photo_editor : AppCompatActivity(),View.OnTouchListener {
 
         myPaint = Paint()
         myPaint.setARGB(255, 150, 200, 215)
-
+        myPaint.strokeWidth = 5F
         img = findViewById(R.id.imageView)
         editText = findViewById(R.id.editText)
 
@@ -112,6 +115,8 @@ class photo_editor : AppCompatActivity(),View.OnTouchListener {
             //myBitmap = Bitmap.createBitmap(img.width, img.height, Bitmap.Config.ARGB_8888)
             myBitmap = img.drawable.toBitmap()
             bitmapCanvas = Canvas(myBitmap)
+            val matrix = Matrix()
+            bitmapCanvas.drawBitmap(myBitmap, matrix, myPaint)
             isBitmapInited = true
             img.setImageBitmap(myBitmap)
         }
@@ -255,28 +260,47 @@ class photo_editor : AppCompatActivity(),View.OnTouchListener {
         }
         val action = event.action
         when(action){
-            MotionEvent.ACTION_UP -> {
-                v.performClick()
-            }
-
             MotionEvent.ACTION_DOWN -> {
-                curX= event.x.toInt()
-                curY= event.y.toInt()
-                bitmapCanvas.drawOval(RectF(curX.toFloat(), curY.toFloat(), curX + 50f, curY + 50f), myPaint)
-                //invalidate()
+//                downX= getPointerCoords(event)[0]
+//                downY= getPointerCoords(event)[1]
+                downX = event.x
+                downY = event.y
             }
             MotionEvent.ACTION_MOVE -> {
-                curX = event.x.toInt()
-                curY= event.y.toInt()
-                bitmapCanvas.drawOval(RectF(curX.toFloat(), curY.toFloat(), curX + 50f, curY + 50f), myPaint)
-                //invalidate()
+                upX = event.x
+                upY = event.y
+                bitmapCanvas.drawLine(downX, downY, upX, upY, myPaint)
+                //bitmapCanvas.drawOval(RectF(curX.toFloat(), curY.toFloat(), curX + 50f, curY + 50f), myPaint)
+                img.invalidate()
+                downX = upX
+                downY = upY
             }
+            MotionEvent.ACTION_UP -> {
+//                v.performClick()
+//                upX= getPointerCoords(event)[0]
+//                upY= getPointerCoords(event)[1]
+                upX = event.x
+                upY = event.y
+//                bitmapCanvas.drawLine(upX, upY, upX+5f, upY+5f, myPaint)
+                bitmapCanvas.drawLine(downX, downY, upX, upY, myPaint)
+                img.invalidate()
+            }
+
             else ->{
             }
 
         }
-        v.invalidate()
+//        v.invalidate()
         return true
+    }
+    private fun getPointerCoords(e: MotionEvent): FloatArray {
+        val index = e.actionIndex
+        val coords = floatArrayOf(e.getX(index), e.getY(index))
+        val matrix = Matrix()
+        //imageMatrix.invert(matrix)
+        //matrix.postTranslate(getScrollX().toFloat(), scrollY.toFloat())
+        matrix.mapPoints(coords)
+        return coords
     }
 
     private fun addText() {
