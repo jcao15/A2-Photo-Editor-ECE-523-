@@ -17,11 +17,11 @@ is able save the photo to the phone gallery.
 
 Screenshots:
 
-![Sample Screenshot](imgs/11.png?raw=tru)
-![Sample Screenshot](imgs/22.png?raw=tru)
-![Sample Screenshot](imgs/33.png?raw=tru)
-![Sample Screenshot](imgs/aa.png?raw=tru)
-![Sample Screenshot](imgs/bb.png?raw=tru)
+<img src="imgs/11.png" width="100">
+<img src="imgs/22.png" width="100">
+<img src="imgs/33.png" width="100">
+<img src="imgs/aa.png" width="100">
+<img src="imgs/bb.png" width="100">
 
 
 ## Reflection/Summary
